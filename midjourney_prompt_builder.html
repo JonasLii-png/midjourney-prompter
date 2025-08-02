@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Midjourney Prompt Builder</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+      background-color: #f8f9fa;
+    }
+    h1 {
+      text-align: center;
+    }
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .box {
+      background-color: white;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    .box.active {
+      background-color: #007bff;
+      color: white;
+      border-color: #0056b3;
+    }
+    #prompt {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      min-height: 60px;
+      font-size: 1rem;
+    }
+    .actions {
+      margin-top: 10px;
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <h1>Midjourney Prompt Builder</h1>
+
+  <div class="container" id="boxContainer">
+    <div class="box">portrait</div>
+    <div class="box">cyberpunk</div>
+    <div class="box">soft lighting</div>
+    <div class="box">octane render</div>
+    <div class="box">dramatic atmosphere</div>
+    <div class="box">studio light</div>
+    <div class="box">depth of field</div>
+    <div class="box">photorealistic</div>
+    <div class="box">cinematic</div>
+    <div class="box">ultra detailed</div>
+    <div class="box">fantasy style</div>
+    <div class="box">low angle</div>
+  </div>
+
+  <textarea id="prompt" readonly placeholder="Klik på bokse for at bygge din prompt..."></textarea>
+
+  <div class="actions">
+    <button onclick="copyPrompt()">Kopiér prompt</button>
+  </div>
+
+  <script>
+    const boxes = document.querySelectorAll('.box');
+    const promptField = document.getElementById('prompt');
+
+    boxes.forEach(box => {
+      box.addEventListener('click', () => {
+        box.classList.toggle('active');
+        updatePrompt();
+      });
+    });
+
+    function updatePrompt() {
+      const activeTexts = Array.from(document.querySelectorAll('.box.active'))
+        .map(box => box.textContent.trim());
+      promptField.value = activeTexts.join(", ");
+    }
+
+    function copyPrompt() {
+      promptField.select();
+      document.execCommand('copy');
+      alert("Prompt kopieret til udklipsholder!");
+    }
+  </script>
+</body>
+</html>
