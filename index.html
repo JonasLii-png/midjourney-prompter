@@ -190,7 +190,13 @@
       <input type="text" id="boxTitle" placeholder="Box Title" />
       <textarea id="boxContent" placeholder="Prompt content to add on click"></textarea>
       <input type="text" id="boxImage" placeholder="Image URL (optional)" />
-      <select id="boxCategory"></select>
+      <select id="boxCategory">
+        <option value="location">Location</option>
+        <option value="style">Style</option>
+        <option value="mood">Mood</option>
+        <option value="parameters">Parameters</option>
+        <option value="profiles">Profiles</option>
+      </select>
       <button onclick="addBox()">Add Box</button>
     </div>
     <div class="input-area" style="justify-content: center; margin-bottom: 40px; margin-top: 40px; border-top: 2px dashed #ccc; padding-top: 20px;">
