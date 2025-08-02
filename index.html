@@ -2,26 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Midjourney Prompt Builder – Avanceret</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Midjourney Prompt Builder – Advanced</title>
   <style>
     body {
       font-family: sans-serif;
-      margin: 20px;
-      background-color: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+      background-color: #e9ecef;
       display: flex;
       flex-direction: row;
       gap: 20px;
+      flex-wrap: wrap;
     }
     main {
-      flex: 1;
+      flex: 1 1 60%;
+      min-width: 300px;
     }
     aside {
-      width: 300px;
-      background: #fff;
+      flex: 1 1 30%;
+      min-width: 280px;
+      background: #2c2f33;
       border-radius: 10px;
       padding: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      color: white;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
     }
     h1 {
       text-align: center;
@@ -34,10 +42,12 @@
       margin-bottom: 20px;
     }
     .input-area input,
-    .input-area textarea {
+    .input-area textarea,
+    .input-area select {
       padding: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
+      font-size: 1rem;
     }
     .input-area input[type="text"] {
       width: 180px;
@@ -46,16 +56,20 @@
       width: 300px;
       height: 60px;
     }
+    .input-area select {
+      width: 150px;
+    }
     .input-area button {
       padding: 10px 15px;
       border-radius: 6px;
       border: none;
-      background-color: #007bff;
+      background-color: #28a745;
       color: white;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
     .input-area button:hover {
-      background-color: #0056b3;
+      background-color: #218838;
     }
     .category {
       margin-bottom: 30px;
@@ -68,17 +82,23 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
+      min-height: 50px;
     }
     .box {
-      background-color: white;
-      border: 2px solid #ccc;
+      background-color: #343a40;
+      border: 2px solid #6c757d;
       border-radius: 12px;
       padding: 10px;
       text-align: center;
       cursor: pointer;
-      transition: 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s;
       width: 150px;
       position: relative;
+      color: white;
+    }
+    .box:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 15px rgba(0, 255, 0, 0.2);
     }
     .box.active {
       background-color: #28a745;
@@ -89,7 +109,7 @@
       display: block;
       margin-top: 5px;
       font-size: 0.8em;
-      color: #555;
+      color: #ccc;
     }
     .box img {
       max-width: 100%;
@@ -135,108 +155,95 @@
       background-color: #28a745;
       color: white;
       cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin: 5px;
     }
     .actions button:hover {
       background-color: #218838;
+    }
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      aside {
+        display: block;
+      }
+      #styleBoxes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      #styleBoxes .box {
+        width: 45%;
+      }
     }
   </style>
 </head>
 <body>
   <main>
-    <h1>Midjourney Prompt Builder – Avanceret</h1>
-
+    <h1>Midjourney Prompt Builder – Advanced</h1>
     <div class="input-area">
-      <input type="text" id="boxTitle" placeholder="Titel på boks">
-      <textarea id="boxContent" placeholder="Prompt der tilføjes ved klik"></textarea>
-      <input type="text" id="boxImage" placeholder="Billed-URL (valgfri)">
-      <input type="text" id="boxCategory" placeholder="Kategori (f.eks. Lys, Stil)">
-      <button onclick="addBox()">Tilføj boks</button>
+      <input type="text" id="boxTitle" placeholder="Box Title" />
+      <textarea id="boxContent" placeholder="Prompt content to add on click"></textarea>
+      <input type="text" id="boxImage" placeholder="Image URL (optional)" />
+      <select id="boxCategory"></select>
+      <button onclick="addBox()">Add Box</button>
     </div>
-
+    <div class="input-area" style="justify-content: center; margin-bottom: 40px;">
+      <input type="text" id="newCategory" placeholder="Add new category" style="width: 200px;" />
+      <button onclick="addCategory()">Add Category</button>
+    </div>
     <div id="categories"></div>
-
-    <textarea id="prompt" readonly placeholder="Din samlede prompt vises her..."></textarea>
-
+    <textarea id="prompt" readonly placeholder="Your combined prompt will appear here..."></textarea>
     <div class="actions">
-      <button onclick="copyPrompt()">Kopiér prompt</button>
+      <button onclick="copyPrompt()">Copy Prompt</button>
+      <button onclick="exportBoxes()">Export</button>
+      <button onclick="importBoxes()">Import</button>
+      <input type="file" id="importFile" style="display:none" accept="application/json" onchange="handleImportFile(event)" />
     </div>
   </main>
 
   <aside>
-    <h2>Stil (Tøj)</h2>
+    <h2>👗 Styles</h2>
     <div id="styleBoxes" class="container"></div>
   </aside>
 
   <script>
     const categoriesContainer = document.getElementById('categories');
     const promptField = document.getElementById('prompt');
+    const styleBoxContainer = document.getElementById('styleBoxes');
+    const categorySelect = document.getElementById('boxCategory');
+    const newCategoryInput = document.getElementById('newCategory');
+
+    // Start with these default categories
+    let categories = ['Style', 'Location', 'Parameters', 'Profiles', 'Mood'];
+
+    // Map to keep track of category containers on page
     const categoryMap = new Map();
 
-    const styleBoxContainer = document.getElementById('styleBoxes');
+    // Store boxes in localStorage (will update below)
+    let allBoxes = JSON.parse(localStorage.getItem('boxes')) || [];
 
-    function addBox() {
-      const title = document.getElementById('boxTitle').value.trim();
-      const content = document.getElementById('boxContent').value.trim();
-      const image = document.getElementById('boxImage').value.trim();
-      const category = document.getElementById('boxCategory').value.trim() || 'Ukategoriseret';
-
-      if (!title || !content) return;
-
-      const target = category.toLowerCase() === 'stil' || category.toLowerCase() === 'style' ? styleBoxContainer : getCategoryContainer(category);
-
-      const box = document.createElement('div');
-      box.className = 'box';
-      box.dataset.prompt = content;
-
-      const deleteBtn = document.createElement('button');
-      deleteBtn.textContent = '×';
-      deleteBtn.className = 'delete-btn';
-      deleteBtn.onclick = (e) => {
-        e.stopPropagation();
-        box.remove();
-        updatePrompt();
-      };
-
-      const editBtn = document.createElement('button');
-      editBtn.textContent = '✎';
-      editBtn.className = 'edit-btn';
-      editBtn.onclick = (e) => {
-        e.stopPropagation();
-        document.getElementById('boxTitle').value = title;
-        document.getElementById('boxContent').value = content;
-        document.getElementById('boxImage').value = image;
-        document.getElementById('boxCategory').value = category;
-        box.remove();
-        updatePrompt();
-      };
-
-      if (image) {
-        box.innerHTML = `<img src="${image}" alt="ikon"><strong>${title}</strong><small>${content}</small>`;
-      } else {
-        box.innerHTML = `<strong>${title}</strong><small>${content}</small>`;
-      }
-
-      box.appendChild(deleteBtn);
-      box.appendChild(editBtn);
-
-      box.addEventListener('click', () => {
-        box.classList.toggle('active');
-        updatePrompt();
+    // Initialize dropdown and containers for categories
+    function initCategories() {
+      categorySelect.innerHTML = '';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        categorySelect.appendChild(opt);
       });
 
-      target.appendChild(box);
-
-      document.getElementById('boxTitle').value = '';
-      document.getElementById('boxContent').value = '';
-      document.getElementById('boxImage').value = '';
-      document.getElementById('boxCategory').value = '';
+      categories.forEach(cat => {
+        if(cat === 'Style') return; // Style is handled separately in aside
+        if(!categoryMap.has(cat)) {
+          const container = createCategoryContainer(cat);
+          categoryMap.set(cat, container);
+        }
+      });
     }
 
-    function getCategoryContainer(category) {
-      if (categoryMap.has(category)) {
-        return categoryMap.get(category);
-      }
-
+    function createCategoryContainer(category) {
       const wrapper = document.createElement('div');
       wrapper.className = 'category';
 
@@ -250,8 +257,124 @@
       wrapper.appendChild(container);
       categoriesContainer.appendChild(wrapper);
 
-      categoryMap.set(category, container);
       return container;
+    }
+
+    function addCategory() {
+      const newCat = newCategoryInput.value.trim();
+      if (!newCat) {
+        alert('Please enter a category name.');
+        return;
+      }
+      if (categories.includes(newCat)) {
+        alert('Category already exists.');
+        return;
+      }
+
+      categories.push(newCat);
+      // Add option to dropdown
+      const opt = document.createElement('option');
+      opt.value = newCat;
+      opt.textContent = newCat;
+      categorySelect.appendChild(opt);
+
+      // Create container for new category
+      const container = createCategoryContainer(newCat);
+      categoryMap.set(newCat, container);
+
+      newCategoryInput.value = '';
+      alert(`Category "${newCat}" added.`);
+    }
+
+    function addBox() {
+      const title = document.getElementById('boxTitle').value.trim();
+      const content = document.getElementById('boxContent').value.trim();
+      const image = document.getElementById('boxImage').value.trim();
+      const category = categorySelect.value;
+
+      if (!title || !content) return;
+
+      if(category === 'Style') {
+        createAndAddBox(styleBoxContainer, title, content, image, category);
+      } else {
+        const target = categoryMap.get(category) || createCategoryContainer(category);
+        categoryMap.set(category, target);
+        createAndAddBox(target, title, content, image, category);
+      }
+
+      document.getElementById('boxTitle').value = '';
+      document.getElementById('boxContent').value = '';
+      document.getElementById('boxImage').value = '';
+
+      saveBoxes();
+      updatePrompt();
+    }
+
+    function createAndAddBox(target, title, content, image, category) {
+      const box = document.createElement('div');
+      box.className = 'box';
+      box.dataset.prompt = content;
+      box.dataset.category = category;
+      box.setAttribute('draggable', 'true');
+
+      box.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', box.outerHTML);
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => box.remove(), 0);
+      });
+
+      target.ondragover = (e) => e.preventDefault();
+      target.ondrop = (e) => {
+        e.preventDefault();
+        const html = e.dataTransfer.getData('text/plain');
+        target.insertAdjacentHTML('beforeend', html);
+        saveBoxes();
+        attachBoxEvents(target.lastChild);
+        updatePrompt();
+      };
+
+      if (image) {
+        box.innerHTML = `<img src="${image}" alt="icon"><strong>${title}</strong><small>${content}</small>`;
+      } else {
+        box.innerHTML = `<strong>${title}</strong><small>${content}</small>`;
+      }
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '×';
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        box.remove();
+        updatePrompt();
+        saveBoxes();
+      };
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '✎';
+      editBtn.className = 'edit-btn';
+      editBtn.onclick = (e) => {
+        e.stopPropagation();
+        document.getElementById('boxTitle').value = title;
+        document.getElementById('boxContent').value = content;
+        document.getElementById('boxImage').value = image;
+        categorySelect.value = category;
+        box.remove();
+        updatePrompt();
+        saveBoxes();
+      };
+
+      box.appendChild(deleteBtn);
+      box.appendChild(editBtn);
+
+      attachBoxEvents(box);
+      target.appendChild(box);
+    }
+
+    function attachBoxEvents(box) {
+      box.addEventListener('click', () => {
+        box.classList.toggle('active');
+        updatePrompt();
+      });
     }
 
     function updatePrompt() {
@@ -263,8 +386,105 @@
     function copyPrompt() {
       promptField.select();
       document.execCommand('copy');
-      alert('Prompt kopieret til udklipsholder!');
+      alert('Prompt copied to clipboard!');
     }
+
+    function exportBoxes() {
+      // Save boxes with their category
+      const boxes = [];
+      document.querySelectorAll('.box').forEach(box => {
+        boxes.push({
+          title: box.querySelector('strong').innerText,
+          content: box.dataset.prompt,
+          image: box.querySelector('img')?.src || '',
+          category: box.dataset.category || 'Style'
+        });
+      });
+
+      const dataStr = JSON.stringify(boxes, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'midjourney_boxes.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importBoxes() {
+      document.getElementById('importFile').click();
+    }
+
+    function handleImportFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          // Update categories with new ones from imported data
+          data.forEach(box => {
+            if(box.category && !categories.includes(box.category)) {
+              categories.push(box.category);
+            }
+          });
+
+          // Clear current boxes and containers
+          document.querySelectorAll('.box').forEach(b => b.remove());
+          categoriesContainer.innerHTML = '';
+          categoryMap.clear();
+          initCategories();
+
+          data.forEach(box => {
+            if(box.category === 'Style') {
+              createAndAddBox(styleBoxContainer, box.title, box.content, box.image, box.category);
+            } else {
+              if(!categoryMap.has(box.category)) {
+                categoryMap.set(box.category, createCategoryContainer(box.category));
+              }
+              createAndAddBox(categoryMap.get(box.category), box.title, box.content, box.image, box.category);
+            }
+          });
+          saveBoxes();
+          updatePrompt();
+        } catch (err) {
+          alert('Failed to load the file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function saveBoxes() {
+      const boxes = [];
+      document.querySelectorAll('.box').forEach(box => {
+        boxes.push({
+          title: box.querySelector('strong').innerText,
+          content: box.dataset.prompt,
+          image: box.querySelector('img')?.src || '',
+          category: box.dataset.category || 'Style'
+        });
+      });
+      localStorage.setItem('boxes', JSON.stringify(boxes));
+    }
+
+    window.onload = () => {
+      initCategories();
+
+      // Load saved boxes if any
+      if (allBoxes.length > 0) {
+        allBoxes.forEach(box => {
+          if(box.category === 'Style') {
+            createAndAddBox(styleBoxContainer, box.title, box.content, box.image, box.category);
+          } else {
+            if(!categoryMap.has(box.category)) {
+              categoryMap.set(box.category, createCategoryContainer(box.category));
+            }
+            createAndAddBox(categoryMap.get(box.category), box.title, box.content, box.image, box.category);
+          }
+        });
+      }
+    };
   </script>
 </body>
 </html>
