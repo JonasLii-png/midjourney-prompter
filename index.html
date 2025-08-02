@@ -214,7 +214,100 @@
   </aside>
 
   <script>
-    // ... JavaScript remains unchanged
-  </script>
-</body>
-</html>
+    // Array to store categories
+    const categories = [];
+
+    // Add a new category and update dropdown + UI
+    function addCategory() {
+      const newCat = document.getElementById("newCategory").value.trim();
+      if (newCat && !categories.includes(newCat)) {
+        categories.push(newCat);
+        updateCategoryDropdown();
+        renderCategories();
+        document.getElementById("newCategory").value = "";
+      }
+    }
+
+    // Populate category dropdown
+    function updateCategoryDropdown() {
+      const select = document.getElementById("boxCategory");
+      select.innerHTML = "";
+      categories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+    }
+
+    // Render category sections for boxes
+    function renderCategories() {
+      const container = document.getElementById("categories");
+      container.innerHTML = "";
+      categories.forEach(cat => {
+        const section = document.createElement("div");
+        section.className = "category";
+        section.innerHTML = `<h2>${cat}</h2><div class="container" id="container-${cat}"></div>`;
+        container.appendChild(section);
+      });
+    }
+
+    // Add a box to the selected category container
+    function addBox() {
+      const title = document.getElementById("boxTitle").value.trim();
+      const content = document.getElementById("boxContent").value.trim();
+      const image = document.getElementById("boxImage").value.trim();
+      const category = document.getElementById("boxCategory").value;
+
+      if (!title || !content || !category) return;
+
+      const box = document.createElement("div");
+      box.className = "box";
+      box.onclick = () => {
+        box.classList.toggle("active");
+        updatePrompt();
+      };
+
+      if (image) {
+        const img = document.createElement("img");
+        img.src = image;
+        box.appendChild(img);
+      }
+
+      const titleNode = document.createElement("div");
+      titleNode.textContent = title;
+      box.appendChild(titleNode);
+
+      const small = document.createElement("small");
+      small.textContent = content;
+      box.appendChild(small);
+
+      document.getElementById(`container-${category}`).appendChild(box);
+
+      // Clear inputs
+      document.getElementById("boxTitle").value = "";
+      document.getElementById("boxContent").value = "";
+      document.getElementById("boxImage").value = "";
+    }
+
+    // Update combined prompt based on active boxes
+    function updatePrompt() {
+      const promptBox = document.getElementById("prompt");
+      const activeBoxes = document.querySelectorAll(".box.active small");
+      const prompt = Array.from(activeBoxes).map(el => el.textContent).join(" ");
+      promptBox.value = prompt;
+    }
+
+    // Dummy implementations for existing buttons to avoid errors
+    function copyPrompt() {
+      const prompt = document.getElementById("prompt");
+      prompt.select();
+      document.execCommand('copy');
+      alert("Prompt copied to clipboard!");
+    }
+
+    function exportBoxes() {
+      alert("Export functionality not yet implemented.");
+    }
+
+    function importBoxes
