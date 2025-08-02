@@ -9,6 +9,19 @@
       font-family: sans-serif;
       margin: 20px;
       background-color: #f0f2f5;
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+    }
+    main {
+      flex: 1;
+    }
+    aside {
+      width: 300px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     h1 {
       text-align: center;
@@ -21,8 +34,7 @@
       margin-bottom: 20px;
     }
     .input-area input,
-    .input-area textarea,
-    .input-area select {
+    .input-area textarea {
       padding: 10px;
       border-radius: 6px;
       border: 1px solid #ccc;
@@ -66,6 +78,7 @@
       cursor: pointer;
       transition: 0.2s;
       width: 150px;
+      position: relative;
     }
     .box.active {
       background-color: #28a745;
@@ -83,6 +96,24 @@
       max-height: 50px;
       display: block;
       margin: 0 auto 5px;
+    }
+    .delete-btn, .edit-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      line-height: 18px;
+      cursor: pointer;
+    }
+    .edit-btn {
+      right: 30px;
+      background: orange;
     }
     #prompt {
       width: 100%;
@@ -111,28 +142,37 @@
   </style>
 </head>
 <body>
-  <h1>Midjourney Prompt Builder – Avanceret</h1>
+  <main>
+    <h1>Midjourney Prompt Builder – Avanceret</h1>
 
-  <div class="input-area">
-    <input type="text" id="boxTitle" placeholder="Titel på boks">
-    <textarea id="boxContent" placeholder="Prompt der tilføjes ved klik"></textarea>
-    <input type="text" id="boxImage" placeholder="Billed-URL (valgfri)">
-    <input type="text" id="boxCategory" placeholder="Kategori (f.eks. Lys, Stil)">
-    <button onclick="addBox()">Tilføj boks</button>
-  </div>
+    <div class="input-area">
+      <input type="text" id="boxTitle" placeholder="Titel på boks">
+      <textarea id="boxContent" placeholder="Prompt der tilføjes ved klik"></textarea>
+      <input type="text" id="boxImage" placeholder="Billed-URL (valgfri)">
+      <input type="text" id="boxCategory" placeholder="Kategori (f.eks. Lys, Stil)">
+      <button onclick="addBox()">Tilføj boks</button>
+    </div>
 
-  <div id="categories"></div>
+    <div id="categories"></div>
 
-  <textarea id="prompt" readonly placeholder="Din samlede prompt vises her..."></textarea>
+    <textarea id="prompt" readonly placeholder="Din samlede prompt vises her..."></textarea>
 
-  <div class="actions">
-    <button onclick="copyPrompt()">Kopiér prompt</button>
-  </div>
+    <div class="actions">
+      <button onclick="copyPrompt()">Kopiér prompt</button>
+    </div>
+  </main>
+
+  <aside>
+    <h2>Stil (Tøj)</h2>
+    <div id="styleBoxes" class="container"></div>
+  </aside>
 
   <script>
     const categoriesContainer = document.getElementById('categories');
     const promptField = document.getElementById('prompt');
     const categoryMap = new Map();
+
+    const styleBoxContainer = document.getElementById('styleBoxes');
 
     function addBox() {
       const title = document.getElementById('boxTitle').value.trim();
@@ -142,29 +182,33 @@
 
       if (!title || !content) return;
 
-      let container;
-      if (categoryMap.has(category)) {
-        container = categoryMap.get(category);
-      } else {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'category';
-
-        const heading = document.createElement('h2');
-        heading.textContent = category;
-
-        container = document.createElement('div');
-        container.className = 'container';
-
-        wrapper.appendChild(heading);
-        wrapper.appendChild(container);
-        categoriesContainer.appendChild(wrapper);
-
-        categoryMap.set(category, container);
-      }
+      const target = category.toLowerCase() === 'stil' || category.toLowerCase() === 'style' ? styleBoxContainer : getCategoryContainer(category);
 
       const box = document.createElement('div');
       box.className = 'box';
       box.dataset.prompt = content;
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '×';
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        box.remove();
+        updatePrompt();
+      };
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '✎';
+      editBtn.className = 'edit-btn';
+      editBtn.onclick = (e) => {
+        e.stopPropagation();
+        document.getElementById('boxTitle').value = title;
+        document.getElementById('boxContent').value = content;
+        document.getElementById('boxImage').value = image;
+        document.getElementById('boxCategory').value = category;
+        box.remove();
+        updatePrompt();
+      };
 
       if (image) {
         box.innerHTML = `<img src="${image}" alt="ikon"><strong>${title}</strong><small>${content}</small>`;
@@ -172,17 +216,42 @@
         box.innerHTML = `<strong>${title}</strong><small>${content}</small>`;
       }
 
+      box.appendChild(deleteBtn);
+      box.appendChild(editBtn);
+
       box.addEventListener('click', () => {
         box.classList.toggle('active');
         updatePrompt();
       });
 
-      container.appendChild(box);
+      target.appendChild(box);
 
       document.getElementById('boxTitle').value = '';
       document.getElementById('boxContent').value = '';
       document.getElementById('boxImage').value = '';
       document.getElementById('boxCategory').value = '';
+    }
+
+    function getCategoryContainer(category) {
+      if (categoryMap.has(category)) {
+        return categoryMap.get(category);
+      }
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'category';
+
+      const heading = document.createElement('h2');
+      heading.textContent = category;
+
+      const container = document.createElement('div');
+      container.className = 'container';
+
+      wrapper.appendChild(heading);
+      wrapper.appendChild(container);
+      categoriesContainer.appendChild(wrapper);
+
+      categoryMap.set(category, container);
+      return container;
     }
 
     function updatePrompt() {
