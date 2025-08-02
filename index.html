@@ -3,21 +3,59 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Midjourney Prompt Builder</title>
+  <title>Midjourney Prompt Builder – Avanceret</title>
   <style>
     body {
       font-family: sans-serif;
       margin: 20px;
-      background-color: #f8f9fa;
+      background-color: #f0f2f5;
     }
     h1 {
       text-align: center;
     }
-    .container {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    .input-area {
+      display: flex;
+      flex-wrap: wrap;
       gap: 10px;
-      margin: 20px 0;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .input-area input,
+    .input-area textarea,
+    .input-area select {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    .input-area input[type="text"] {
+      width: 180px;
+    }
+    .input-area textarea {
+      width: 300px;
+      height: 60px;
+    }
+    .input-area button {
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    .input-area button:hover {
+      background-color: #0056b3;
+    }
+    .category {
+      margin-bottom: 30px;
+    }
+    .category h2 {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
     .box {
       background-color: white;
@@ -26,12 +64,25 @@
       padding: 10px;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s ease-in-out;
+      transition: 0.2s;
+      width: 150px;
     }
     .box.active {
-      background-color: #007bff;
+      background-color: #28a745;
       color: white;
-      border-color: #0056b3;
+      border-color: #1e7e34;
+    }
+    .box small {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.8em;
+      color: #555;
+    }
+    .box img {
+      max-width: 100%;
+      max-height: 50px;
+      display: block;
+      margin: 0 auto 5px;
     }
     #prompt {
       width: 100%;
@@ -45,7 +96,7 @@
       margin-top: 10px;
       text-align: center;
     }
-    button {
+    .actions button {
       padding: 10px 20px;
       font-size: 1rem;
       border: none;
@@ -54,56 +105,96 @@
       color: white;
       cursor: pointer;
     }
-    button:hover {
+    .actions button:hover {
       background-color: #218838;
     }
   </style>
 </head>
 <body>
-  <h1>Midjourney Prompt Builder</h1>
+  <h1>Midjourney Prompt Builder – Avanceret</h1>
 
-  <div class="container" id="boxContainer">
-    <div class="box">portrait</div>
-    <div class="box">cyberpunk</div>
-    <div class="box">soft lighting</div>
-    <div class="box">octane render</div>
-    <div class="box">dramatic atmosphere</div>
-    <div class="box">studio light</div>
-    <div class="box">depth of field</div>
-    <div class="box">photorealistic</div>
-    <div class="box">cinematic</div>
-    <div class="box">ultra detailed</div>
-    <div class="box">fantasy style</div>
-    <div class="box">low angle</div>
+  <div class="input-area">
+    <input type="text" id="boxTitle" placeholder="Titel på boks">
+    <textarea id="boxContent" placeholder="Prompt der tilføjes ved klik"></textarea>
+    <input type="text" id="boxImage" placeholder="Billed-URL (valgfri)">
+    <input type="text" id="boxCategory" placeholder="Kategori (f.eks. Lys, Stil)">
+    <button onclick="addBox()">Tilføj boks</button>
   </div>
 
-  <textarea id="prompt" readonly placeholder="Klik på bokse for at bygge din prompt..."></textarea>
+  <div id="categories"></div>
+
+  <textarea id="prompt" readonly placeholder="Din samlede prompt vises her..."></textarea>
 
   <div class="actions">
     <button onclick="copyPrompt()">Kopiér prompt</button>
   </div>
 
   <script>
-    const boxes = document.querySelectorAll('.box');
+    const categoriesContainer = document.getElementById('categories');
     const promptField = document.getElementById('prompt');
+    const categoryMap = new Map();
 
-    boxes.forEach(box => {
+    function addBox() {
+      const title = document.getElementById('boxTitle').value.trim();
+      const content = document.getElementById('boxContent').value.trim();
+      const image = document.getElementById('boxImage').value.trim();
+      const category = document.getElementById('boxCategory').value.trim() || 'Ukategoriseret';
+
+      if (!title || !content) return;
+
+      let container;
+      if (categoryMap.has(category)) {
+        container = categoryMap.get(category);
+      } else {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'category';
+
+        const heading = document.createElement('h2');
+        heading.textContent = category;
+
+        container = document.createElement('div');
+        container.className = 'container';
+
+        wrapper.appendChild(heading);
+        wrapper.appendChild(container);
+        categoriesContainer.appendChild(wrapper);
+
+        categoryMap.set(category, container);
+      }
+
+      const box = document.createElement('div');
+      box.className = 'box';
+      box.dataset.prompt = content;
+
+      if (image) {
+        box.innerHTML = `<img src="${image}" alt="ikon"><strong>${title}</strong><small>${content}</small>`;
+      } else {
+        box.innerHTML = `<strong>${title}</strong><small>${content}</small>`;
+      }
+
       box.addEventListener('click', () => {
         box.classList.toggle('active');
         updatePrompt();
       });
-    });
+
+      container.appendChild(box);
+
+      document.getElementById('boxTitle').value = '';
+      document.getElementById('boxContent').value = '';
+      document.getElementById('boxImage').value = '';
+      document.getElementById('boxCategory').value = '';
+    }
 
     function updatePrompt() {
-      const activeTexts = Array.from(document.querySelectorAll('.box.active'))
-        .map(box => box.textContent.trim());
-      promptField.value = activeTexts.join(", ");
+      const activeBoxes = document.querySelectorAll('.box.active');
+      const promptParts = Array.from(activeBoxes).map(b => b.dataset.prompt);
+      promptField.value = promptParts.join(', ');
     }
 
     function copyPrompt() {
       promptField.select();
       document.execCommand('copy');
-      alert("Prompt kopieret til udklipsholder!");
+      alert('Prompt kopieret til udklipsholder!');
     }
   </script>
 </body>
