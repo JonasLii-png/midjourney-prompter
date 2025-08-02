@@ -2,225 +2,462 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Midjourney Prompt Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Midjourney Prompt Builder – Advanced</title>
   <style>
     body {
+      font-family: sans-serif;
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f0f0f0;
-      color: #333;
+      padding: 20px;
+      background-color: #e9ecef;
       display: flex;
-      flex-direction: column;
-      min-height: 100vh;
+      flex-direction: row;
+      gap: 20px;
+      flex-wrap: wrap;
     }
-
-    header {
-      background-color: #222;
-      color: #fff;
-      padding: 1rem;
-      text-align: center;
-    }
-
     main {
-      display: flex;
-      flex: 1;
-      padding: 1rem;
+      flex: 1 1 60%;
+      min-width: 300px;
     }
-
-    section {
-      flex: 3;
-      padding-right: 1rem;
-    }
-
     aside {
-      flex: 1;
+      flex: 1 1 30%;
+      min-width: 280px;
+      background: #2c2f33;
+      border-radius: 10px;
+      padding: 10px;
+      color: white;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-      background: #eaeaea;
-      padding: 1rem;
-      border-left: 2px solid #ccc;
+      gap: 10px;
     }
-
-    .box {
-      background: #333;
+    h1 {
+      text-align: center;
+    }
+    .input-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .input-area input,
+    .input-area textarea,
+    .input-area select {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    .input-area input[type="text"] {
+      width: 180px;
+    }
+    .input-area textarea {
+      width: 300px;
+      height: 60px;
+    }
+    .input-area select {
+      width: 150px;
+    }
+    .input-area button {
+      padding: 10px 15px;
+      border-radius: 6px;
+      border: none;
+      background-color: #28a745;
       color: white;
-      padding: 0.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      transition: transform 0.2s, box-shadow 0.2s;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
-
+    .input-area button:hover {
+      background-color: #218838;
+    }
+    .category {
+      margin-bottom: 30px;
+    }
+    .category h2 {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      min-height: 50px;
+    }
+    .box {
+      background-color: #343a40;
+      border: 2px solid #6c757d;
+      border-radius: 12px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      width: 150px;
+      position: relative;
+      color: white;
+    }
     .box:hover {
       transform: scale(1.03);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 15px rgba(0, 255, 0, 0.2);
     }
-
+    .box.active {
+      background-color: #28a745;
+      color: white;
+      border-color: #1e7e34;
+    }
+    .box small {
+      display: block;
+      margin-top: 5px;
+      font-size: 0.8em;
+      color: #ccc;
+    }
     .box img {
+      max-width: 100%;
+      max-height: 80px;
+      display: block;
+      margin: 0 auto 5px;
+    }
+    .delete-btn, .edit-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: red;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      line-height: 18px;
+      cursor: pointer;
+    }
+    .edit-btn {
+      right: 30px;
+      background: orange;
+    }
+    #prompt {
       width: 100%;
-      height: auto;
-      border-radius: 4px;
-    }
-
-    .form-section {
-      margin-bottom: 1rem;
-    }
-
-    .category-title {
-      grid-column: span 2;
-      font-weight: bold;
-      margin-top: 1rem;
-    }
-
-    .active-style {
-      border: 2px solid #5dbb63;
-    }
-
-    .prompt-output {
-      background: white;
-      padding: 1rem;
+      padding: 12px;
+      border: 1px solid #ccc;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-top: 1rem;
+      min-height: 60px;
+      font-size: 1rem;
     }
-
-    .add-category-section {
-      background: #ddd;
-      padding: 1rem;
-      margin-top: 2rem;
+    .actions {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .actions button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
       border-radius: 8px;
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin: 5px;
+    }
+    .actions button:hover {
+      background-color: #218838;
+    }
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      aside {
+        display: block;
+      }
+      #styleBoxes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      #styleBoxes .box {
+        width: 45%;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Midjourney Prompt Builder</h1>
-  </header>
   <main>
-    <section>
-      <div class="form-section">
-        <input id="boxTitle" placeholder="Title" />
-        <input id="boxContent" placeholder="Prompt text" />
-        <input id="boxImage" placeholder="Image URL (optional)" />
-        <select id="boxCategory">
-          <option value="Location">Location</option>
-          <option value="Style">Style</option>
-          <option value="Look">Look</option>
-          <option value="Parameters">Parameters</option>
-          <option value="Profiles">Profiles</option>
-        </select>
-        <button onclick="addBox()">Add Box</button>
-      </div>
-
-      <div class="prompt-output">
-        <h3>Combined Prompt:</h3>
-        <p id="combinedPrompt"></p>
-      </div>
-
-      <div class="add-category-section">
-        <input id="newCategoryInput" placeholder="New category name" />
-        <button onclick="addCategory()">Add Category</button>
-      </div>
-
-      <div id="categories"></div>
-    </section>
-    <aside>
-      <div class="category-title">👗 Styles</div>
-      <div id="Style" class="style-grid"></div>
-    </aside>
+    <h1>Midjourney Prompt Builder – Advanced</h1>
+    <div class="input-area">
+      <input type="text" id="boxTitle" placeholder="Box Title" />
+      <textarea id="boxContent" placeholder="Prompt content to add on click"></textarea>
+      <input type="text" id="boxImage" placeholder="Image URL (optional)" />
+      <select id="boxCategory"></select>
+      <button onclick="addBox()">Add Box</button>
+    </div>
+    <div class="input-area" style="justify-content: center; margin-bottom: 40px; margin-top: 40px;">
+      <input type="text" id="newCategory" placeholder="Add new category" style="width: 200px;" />
+      <button onclick="addCategory()">Add Category</button>
+    </div>
+    <div id="categories"></div>
+    <textarea id="prompt" readonly placeholder="Your combined prompt will appear here..."></textarea>
+    <div class="actions">
+      <button onclick="copyPrompt()">Copy Prompt</button>
+      <button onclick="exportBoxes()">Export</button>
+      <button onclick="importBoxes()">Import</button>
+      <button onclick="toggleStyleMode()">Style Mode: One</button>
+      <input type="file" id="importFile" style="display:none" accept="application/json" onchange="handleImportFile(event)" />
+    </div>
   </main>
+
+  <aside>
+    <h2>👗 Styles</h2>
+    <div id="styleBoxes" class="container"></div>
+  </aside>
+
   <script>
-    let categories = ["Location", "Style", "Look", "Parameters", "Profiles"];
-    let boxes = JSON.parse(localStorage.getItem('boxes') || '[]');
-    let activeStyleId = null;
+    const categoriesContainer = document.getElementById('categories');
+    const promptField = document.getElementById('prompt');
+    const styleBoxContainer = document.getElementById('styleBoxes');
+    const categorySelect = document.getElementById('boxCategory');
+    const newCategoryInput = document.getElementById('newCategory');
+
+    let onlyOneStyleActive = true;
+    let categories = ['Style', 'Location', 'Parameters', 'Profiles', 'Look'];
+    const categoryMap = new Map();
+    let allBoxes = JSON.parse(localStorage.getItem('boxes')) || [];
+
+    function toggleStyleMode() {
+      onlyOneStyleActive = !onlyOneStyleActive;
+      const btn = document.querySelector('.actions button[onclick="toggleStyleMode()"]');
+      btn.textContent = `Style Mode: ${onlyOneStyleActive ? 'One' : 'Multi'}`;
+    }
+
+    function initCategories() {
+      categorySelect.innerHTML = '';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        categorySelect.appendChild(opt);
+      });
+      categories.forEach(cat => {
+        if(cat === 'Style') return;
+        if(!categoryMap.has(cat)) {
+          const container = createCategoryContainer(cat);
+          categoryMap.set(cat, container);
+        }
+      });
+    }
+
+    function createCategoryContainer(category) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'category';
+
+      const heading = document.createElement('h2');
+      heading.textContent = category;
+
+      const container = document.createElement('div');
+      container.className = 'container';
+
+      wrapper.appendChild(heading);
+      wrapper.appendChild(container);
+      categoriesContainer.appendChild(wrapper);
+
+      return container;
+    }
 
     function addCategory() {
-      const name = document.getElementById('newCategoryInput').value.trim();
-      if (name && !categories.includes(name)) {
-        categories.push(name);
-        const option = document.createElement('option');
-        option.value = name;
-        option.textContent = name;
-        document.getElementById('boxCategory').appendChild(option);
-        renderCategories();
-        document.getElementById('newCategoryInput').value = '';
-      }
+      const newCat = newCategoryInput.value.trim();
+      if (!newCat) return alert('Please enter a category name.');
+      if (categories.includes(newCat)) return alert('Category already exists.');
+
+      categories.push(newCat);
+      const opt = document.createElement('option');
+      opt.value = newCat;
+      opt.textContent = newCat;
+      categorySelect.appendChild(opt);
+      const container = createCategoryContainer(newCat);
+      categoryMap.set(newCat, container);
+      newCategoryInput.value = '';
+      alert(`Category "${newCat}" added.`);
     }
 
     function addBox() {
-      const title = document.getElementById('boxTitle').value;
-      const content = document.getElementById('boxContent').value;
-      const image = document.getElementById('boxImage').value;
-      const category = document.getElementById('boxCategory').value;
+      const title = document.getElementById('boxTitle').value.trim();
+      const content = document.getElementById('boxContent').value.trim();
+      const image = document.getElementById('boxImage').value.trim();
+      const category = categorySelect.value;
+      if (!title || !content) return;
 
-      const box = {
-        id: Date.now(),
-        title,
-        content,
-        image,
-        category
-      };
-      boxes.push(box);
-      localStorage.setItem('boxes', JSON.stringify(boxes));
-      renderBoxes();
+      const target = category === 'Style' ? styleBoxContainer : (categoryMap.get(category) || createCategoryContainer(category));
+      categoryMap.set(category, target);
+      createAndAddBox(target, title, content, image, category);
+
       document.getElementById('boxTitle').value = '';
       document.getElementById('boxContent').value = '';
       document.getElementById('boxImage').value = '';
+      saveBoxes();
+      updatePrompt();
     }
 
-    function renderCategories() {
-      const container = document.getElementById('categories');
-      container.innerHTML = '';
-      categories.forEach(cat => {
-        if (cat !== 'Style') {
-          const catDiv = document.createElement('div');
-          catDiv.innerHTML = `<h3>${cat}</h3><div id="cat-${cat}"></div>`;
-          container.appendChild(catDiv);
-        }
+    function createAndAddBox(target, title, content, image, category) {
+      const box = document.createElement('div');
+      box.className = 'box';
+      box.dataset.prompt = content;
+      box.dataset.category = category;
+      box.setAttribute('draggable', 'true');
+
+      box.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', box.outerHTML);
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => box.remove(), 0);
       });
-    }
 
-    function renderBoxes() {
-      renderCategories();
-      document.querySelectorAll('[id^="cat-"]').forEach(el => el.innerHTML = '');
-      document.getElementById('Style').innerHTML = '';
-      const promptParts = {
-        Location: '', Style: '', Look: '', Parameters: '', Profiles: ''
+      target.ondragover = e => e.preventDefault();
+      target.ondrop = e => {
+        e.preventDefault();
+        const html = e.dataTransfer.getData('text/plain');
+        target.insertAdjacentHTML('beforeend', html);
+        saveBoxes();
+        attachBoxEvents(target.lastChild);
+        updatePrompt();
       };
 
-      boxes.forEach(box => {
-        const el = document.createElement('div');
-        el.className = 'box';
-        if (box.category === 'Style') {
-          el.innerHTML = `${box.image ? `<img src="${box.image}" />` : ''}<strong>${box.title}</strong>`;
-          if (box.id === activeStyleId) el.classList.add('active-style');
-          el.onclick = () => {
-            activeStyleId = box.id;
-            promptParts.Style = box.content;
-            updatePrompt(promptParts);
-            renderBoxes();
-          };
-          document.getElementById('Style').appendChild(el);
+      if (image) {
+        if (category === 'Style') {
+          box.innerHTML = `<img src="${image}" alt="icon" style="max-height:80px;"><strong>${title}</strong>`;
         } else {
-          el.innerHTML = `<strong>${box.title}</strong><p>${box.content}</p>`;
-          el.onclick = () => {
-            promptParts[box.category] = promptParts[box.category] + ' ' + box.content;
-            updatePrompt(promptParts);
-          };
-          document.getElementById(`cat-${box.category}`).appendChild(el);
+          box.innerHTML = `<img src="${image}" alt="icon"><strong>${title}</strong><small>${content}</small>`;
         }
+      } else {
+        box.innerHTML = `<strong>${title}</strong>${category !== 'Style' ? `<small>${content}</small>` : ''}`;
+      }
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = '×';
+      deleteBtn.className = 'delete-btn';
+      deleteBtn.onclick = e => {
+        e.stopPropagation();
+        box.remove();
+        updatePrompt();
+        saveBoxes();
+      };
+
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '✎';
+      editBtn.className = 'edit-btn';
+      editBtn.onclick = e => {
+        e.stopPropagation();
+        document.getElementById('boxTitle').value = title;
+        document.getElementById('boxContent').value = content;
+        document.getElementById('boxImage').value = image;
+        categorySelect.value = category;
+        box.remove();
+        updatePrompt();
+        saveBoxes();
+      };
+
+      box.appendChild(deleteBtn);
+      box.appendChild(editBtn);
+      attachBoxEvents(box);
+      target.appendChild(box);
+    }
+
+    function attachBoxEvents(box) {
+      box.addEventListener('click', () => {
+        if (box.dataset.category === 'Style' && onlyOneStyleActive) {
+          document.querySelectorAll('.box[data-category="Style"]').forEach(b => b.classList.remove('active'));
+        }
+        box.classList.toggle('active');
+        updatePrompt();
       });
     }
 
-    function updatePrompt(parts) {
+    function updatePrompt() {
       const order = ['Location', 'Style', 'Look', 'Parameters', 'Profiles'];
-      document.getElementById('combinedPrompt').textContent = order.map(k => parts[k] || '').join(' ').trim();
+      const activeBoxes = Array.from(document.querySelectorAll('.box.active'));
+      const sorted = order.flatMap(cat => activeBoxes.filter(b => b.dataset.category === cat));
+      const promptParts = sorted.map(b => b.dataset.prompt);
+      promptField.value = promptParts.join(', ');
+    }
+
+    function copyPrompt() {
+      promptField.select();
+      document.execCommand('copy');
+      alert('Prompt copied to clipboard!');
+    }
+
+    function exportBoxes() {
+      const boxes = [];
+      document.querySelectorAll('.box').forEach(box => {
+        boxes.push({
+          title: box.querySelector('strong').innerText,
+          content: box.dataset.prompt,
+          image: box.querySelector('img')?.src || '',
+          category: box.dataset.category || 'Style'
+        });
+      });
+      const dataStr = JSON.stringify(boxes, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'midjourney_boxes.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importBoxes() {
+      document.getElementById('importFile').click();
+    }
+
+    function handleImportFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const data = JSON.parse(e.target.result);
+          data.forEach(box => { if (box.category === 'Mood') box.category = 'Look'; });
+          document.querySelectorAll('.box').forEach(b => b.remove());
+          categoriesContainer.innerHTML = '';
+          categoryMap.clear();
+          initCategories();
+          data.forEach(box => {
+            const target = box.category === 'Style' ? styleBoxContainer : (categoryMap.get(box.category) || createCategoryContainer(box.category));
+            categoryMap.set(box.category, target);
+            createAndAddBox(target, box.title, box.content, box.image, box.category);
+          });
+          saveBoxes();
+          updatePrompt();
+        } catch (err) {
+          alert('Failed to load the file.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function saveBoxes() {
+      const boxes = [];
+      document.querySelectorAll('.box').forEach(box => {
+        boxes.push({
+          title: box.querySelector('strong').innerText,
+          content: box.dataset.prompt,
+          image: box.querySelector('img')?.src || '',
+          category: box.dataset.category || 'Style'
+        });
+      });
+      localStorage.setItem('boxes', JSON.stringify(boxes));
     }
 
     window.onload = () => {
-      renderBoxes();
+      allBoxes = allBoxes.map(box => {
+        if (box.category === 'Mood') box.category = 'Look';
+        return box;
+      });
+      initCategories();
+      if (allBoxes.length > 0) {
+        allBoxes.forEach(box => {
+          const target = box.category === 'Style' ? styleBoxContainer : (categoryMap.get(box.category) || createCategoryContainer(box.category));
+          categoryMap.set(box.category, target);
+          createAndAddBox(target, box.title, box.content, box.image, box.category);
+        });
+      }
     };
   </script>
 </body>
